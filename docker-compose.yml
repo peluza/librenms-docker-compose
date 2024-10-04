@@ -1,0 +1,45 @@
+version: '3.5'
+
+services:
+  db:
+    image: mariadb:10.5
+    container_name: librenms_db
+    command: mysqld --sql-mode=""
+    volumes:
+      - librenms-db:/var/lib/mysql
+    environment:
+      - MYSQL_ROOT_PASSWORD=librenms
+      - MYSQL_DATABASE=librenms
+      - MYSQL_USER=librenms
+      - MYSQL_PASSWORD=librenms
+    restart: always
+
+  librenms:
+    image: librenms/librenms:latest
+    container_name: librenms
+    depends_on:
+      - db
+    ports:
+      - "8000:8000"
+    environment:
+      - DB_HOST=db
+      - DB_NAME=librenms
+      - DB_USER=librenms
+      - DB_PASSWORD=librenms
+      - BASE_URL=http://localhost:8000
+      - POLLERS=16
+    volumes:
+      - librenms-data:/data
+    restart: always
+
+  redis:
+    image: redis:5.0-alpine
+    container_name: librenms_redis
+    restart: always
+    volumes:
+      - librenms-redis:/data
+
+volumes:
+  librenms-db:
+  librenms-data:
+  librenms-redis:
